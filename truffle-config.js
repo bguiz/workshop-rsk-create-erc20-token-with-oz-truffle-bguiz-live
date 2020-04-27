@@ -20,7 +20,19 @@
 
 const HDWalletProvider = require('@truffle/hdwallet-provider');
 const fs = require('fs');
+
+const gasPriceRaw = fs.readFileSync(".gas-price.json").toString().trim();
+const gasPrice = parseInt(JSON.parse(gasPriceRaw).result, 16);
+if (!gasPrice || isNaN(gasPrice)) {
+  throw new Error('unable to retrieve network gas price from .gas-price.json');
+}
 const mnemonic = fs.readFileSync(".secret").toString().trim();
+if (!mnemonic || mnemonic.split(' ').length !== 12) {
+  throw new Error('unable to retrieve mnemonic from .mnemonic');
+}
+process.stdout.write(`gasPrice: ${gasPrice}\nmnemonic: ${mnemonic}\n`);
+// NOTE only do the above in demo code.
+// This is not, by far, secure enough for a real use scenario.
 
 module.exports = {
   /**
@@ -40,8 +52,8 @@ module.exports = {
         'https://public-node.testnet.rsk.co/1.3.0/',
       ),
       network_id: 31,
-      gasPrice: 0x387EE40,
-      networkCheckTimeout: 1000000000
+      gasPrice,
+      networkCheckTimeout: 1e9,
     },
 
     // Useful for testing. The `development` name is special - truffle uses it by default
